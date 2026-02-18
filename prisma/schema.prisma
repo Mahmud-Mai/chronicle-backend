@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActivityType {
+  TIME
+  QUANTITY
+  PROGRESS
+  MEMORIZATION
+}
+
+enum EntryStatus {
+  ACTIVE
+  CORRECTED
+  CANCELLED
+}
+
+enum TimerStatus {
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum SoundType {
+  CHIME
+  GONG
+  DIGITAL
+}
+
+enum RecallStatus {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String?
+  name          String
+  profileImage  String?
+  isGoogleAuth  Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  activities    Activity[]
+  entries       ActivityEntry[]
+  timerSessions TimerSession[]
+  intentions    Intention[]
+  settings      UserSettings?
+
+  @@index([email])
+}
+
+model Activity {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  type        ActivityType
+  config      Json
+  color       String       @default("#6366f1")
+  icon        String       @default("📊")
+  isArchived  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  entries       ActivityEntry[]
+  timerSessions TimerSession[]
+  intentions    Intention[]
+
+  @@index([userId])
+  @@index([type])
+  @@index([isArchived])
+}
+
+model ActivityEntry {
+  id              String       @id @default(uuid())
+  activityId      String
+  activity        Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          EntryStatus  @default(ACTIVE)
+  correctedFromId String?
+  correctedFrom   ActivityEntry? @relation("Correction", fields: [correctedFromId], references: [id])
+  corrections     ActivityEntry[] @relation("Correction")
+  activityType    ActivityType
+  data            Json
+  notes           String?
+  loggedAt        DateTime     @default(now())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([activityId])
+  @@index([loggedAt])
+  @@index([status])
+}
+
+model TimerSession {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityId  String
+  activity    Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  duration    Int
+  status      TimerStatus  @default(RUNNING)
+  soundType   SoundType    @default(CHIME)
+  startedAt   DateTime     @default(now())
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([activityId])
+  @@index([status])
+}
+
+model Intention {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityId      String
+  activity        Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  scheduledStart  DateTime
+  scheduledEnd    DateTime
+  completed       Boolean   @default(false)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([scheduledStart])
+}
+
+model UserSettings {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timezone     String   @default("UTC")
+  emailWeekly  Boolean  @default(false)
+  emailMonthly Boolean  @default(false)
+  theme        String   @default("dark")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
