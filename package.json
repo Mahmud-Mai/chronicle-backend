@@ -1,7 +1,7 @@
 {
-  "name": "focusflow-backend",
+  "name": "chronicle-backend",
   "version": "1.0.0",
-  "description": "FocusFlow - Intelligence-First Productivity Backend",
+  "description": "Chronicle - Intelligence-First Productivity Backend",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",

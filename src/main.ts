@@ -27,8 +27,8 @@ async function bootstrap() {
   app.useGlobalFilters(new SupertokensExceptionFilter());
   
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('FocusFlow API')
-    .setDescription('FocusFlow - Intelligence-First Productivity API')
+    .setTitle('Chronicle API')
+    .setDescription('Chronicle - Intelligence-First Productivity API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -39,7 +39,7 @@ async function bootstrap() {
   const port = configService.get('PORT', 3000);
   await app.listen(port);
   
-  console.log(`🚀 FocusFlow API running on http://localhost:${port}`);
+  console.log(`🚀 Chronicle API running on http://localhost:${port}`);
   console.log(`📚 API Docs available at http://localhost:${port}/api/docs`);
 }
 
